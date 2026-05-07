@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Warta Gereja Flipbook</title>
+
+  <!-- PDF JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- Turn JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/3/turn.min.js"></script>
+
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    body{
+      background:#e9dccb;
+      overflow:hidden;
+      font-family:Arial, sans-serif;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      flex-direction:column;
+      height:100vh;
+    }
+
+    h1{
+      margin-bottom:15px;
+      color:#4e342e;
+      font-size:28px;
+    }
+
+    #flipbook{
+      width:90vw;
+      height:85vh;
+    }
+
+    #flipbook .page{
+      background:white;
+      overflow:hidden;
+    }
+
+    canvas{
+      width:100%;
+      height:100%;
+    }
+
+    .controls{
+      position:fixed;
+      bottom:20px;
+      display:flex;
+      gap:10px;
+      z-index:999;
+    }
+
+    button{
+      padding:12px 20px;
+      border:none;
+      border-radius:10px;
+      background:#6d4c41;
+      color:white;
+      cursor:pointer;
+      font-size:15px;
+    }
+
+    button:hover{
+      background:#4e342e;
+    }
+
+    @media(max-width:768px){
+      #flipbook{
+        width:95vw;
+        height:78vh;
+      }
+
+      h1{
+        font-size:20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Warta Gereja Paroki</h1>
+
+<div id="flipbook"></div>
+
+<div class="controls">
+  <button onclick="prevPage()">⬅ Prev</button>
+  <button onclick="nextPage()">Next ➡</button>
+</div>
+
+<script>
+
+  // GANTI SESUAI NAMA PDF DI GITHUB
+  const url = 'Warta Paroki.pdf';
+
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+  async function loadPDF() {
+
+    const pdf = await pdfjsLib.getDocument(url).promise;
+
+    const flipbook = document.getElementById('flipbook');
+
+    for(let pageNum = 1; pageNum <= pdf.numPages; pageNum++){
+
+      const page = await pdf.getPage(pageNum);
+
+      const viewport = page.getViewport({ scale: 1.5 });
+
+      const div = document.createElement('div');
+      div.className = 'page';
+
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+
+      div.appendChild(canvas);
+      flipbook.appendChild(div);
+
+      await page.render({
+        canvasContext: context,
+        viewport: viewport
+      }).promise;
+    }
+
+    $('#flipbook').turn({
+      width: $('#flipbook').width(),
+      height: $('#flipbook').height(),
+      autoCenter: true,
+      gradients: true,
+      elevation: 50
+    });
+  }
+
+  function nextPage(){
+    $('#flipbook').turn('next');
+  }
+
+  function prevPage(){
+    $('#flipbook').turn('previous');
+  }
+
+  loadPDF();
+
+</script>
+
+</body>
+</html>
